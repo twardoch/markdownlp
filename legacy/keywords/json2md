@@ -1,0 +1,69 @@
+#!/usr/bin/env node
+
+var unified = require('unified')
+var stream = require('unified-stream')
+var unherit = require('unherit')
+var xtend = require('xtend')
+var frontmatter = require('remark-frontmatter')
+var stringify = require('remark-stringify')
+
+function Parser(doc, file) {
+    this.file = file
+    this.offset = {}
+    this.options = xtend(this.options)
+
+    this.inList = false
+    this.inBlock = false
+    this.inLink = false
+    this.atStart = true
+}
+
+var proto = Parser.prototype
+proto.parse = parse
+
+var xtend = require('xtend')
+var removePosition = require('unist-util-remove-position')
+
+var lineFeed = '\n'
+var lineBreaksExpression = /\r\n|\r/g
+
+// Parse the bound file.
+function parse() {
+    var self = this
+    var value = String(self.file)
+    var start = { line: 1, column: 1, offset: 0 }
+    var content = xtend(start)
+    var node
+
+    // Clean non-unix newlines: `\r\n` and `\r` are all changed to `\n`.
+    // This should not affect positional information.
+    value = value.replace(lineBreaksExpression, lineFeed)
+
+    // BOM.
+    if (value.charCodeAt(0) === 0xfeff) {
+        value = value.slice(1)
+
+        content.column++
+            content.offset++
+    }
+
+    node = JSON.parse(value)
+    removePosition(node, true)
+
+    return node
+}
+
+json_parse.Parser = Parser
+
+function json_parse() {
+    var Local = unherit(Parser)
+
+    this.Parser = Local
+}
+
+var processor = unified()
+    .use(json_parse)
+    .use(stringify, {})
+    .use(frontmatter, ['yaml'])
+
+process.stdin.pipe(stream(processor)).pipe(process.stdout)
