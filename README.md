@@ -35,7 +35,7 @@ You can also invoke it via `python3 -m markdownlp.md_auto_tags MD_PATH ...`
 - `--html_path=PATH`: optional path to corresponding HTML file or folder
 - `--selector="html"`: CSS selector to restrict text extraction. Defaults to "html", for MkDocs Material sites use "article".
 - `--boost_headings`: If set, sonsiders H1-H6 tag text more important in keyword extraction.
-- `--lang="en"`: Language of text. Defaults to "en". For non-English texts, you need to install some NLP models yourself.
+- `--lang="en"`: Language of text. Defaults to "en". For non-English texts, you need to install some NLP models yourself (and possibly modify the code, I haven’t tested the tool with non-English text).
 - `--slug`: If set, the extracted tags are slugified (converted to lowercase and spaces replaced with hyphens).
 - `--prefix=""`: Prefix for each tag. If tags are slugified, you could use "#". Defaults to "".
 - `--auto_only`: If set, the tool will generate tags only if `tags-auto: true` is present in the Markdown metadata.
