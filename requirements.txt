@@ -1,6 +1,6 @@
 Markdown>=3.3.6
 pymdown-extensions>=9.3
-git+https://github.com/twardoch/html22text 
+git+https://github.com/twardoch/html22text
 git+https://github.com/html5lib/html5lib-python # Force 3.10 compat
 beautifulsoup4>=4.11.1
 html2text>=2020.1.16
@@ -9,3 +9,4 @@ nltk
 spacy
 git+https://github.com/boudinfl/pke.git
 python-slugify>=6.1.2
+markdown-full-yaml-metadata>=2.1.0

@@ -50,8 +50,6 @@ MODELS = {
     for model, params in MODELS_PARAMS.items()
 }
 
-TAGS_GLOBAL_NO_DEFAULT = []
-
 
 class TagDoc(object):
     def __init__(self, md_path, html_path="", selector="html", tags_global_no=None):
@@ -94,7 +92,7 @@ class TagDoc(object):
                 "admonition",
                 "attr_list",
                 "def_list",
-                "meta",
+                "full_yaml_metadata",
                 "md_in_html",
                 "toc",
                 "tables",
@@ -105,9 +103,7 @@ class TagDoc(object):
                 "pymdownx.mark",
                 "pymdownx.saneheaders",
             ],
-
         )
-        logging.error(html)
         return (
             f"""<html><head><meta charset="UTF-8"></head><body>{html}</body></html>"""
         )
@@ -162,6 +158,7 @@ class TagExtractor(object):
         retag: bool = False,
         auto_only: bool = False,
         boost_headings: bool = False,
+        stop_words: list = [],
     ):
         self.lang = lang
         self.tag_slug = slug
@@ -173,26 +170,12 @@ class TagExtractor(object):
             self.tag_boost = {"h1": 64, "h2 h3": 16, "h4 h5 h6": 4}
         else:
             self.tag_boost = {}
-        self.build_stopwords()
+        self.stop_words = self.get_stop_words(stop_words)
+        logging.debug(f"""{self.stop_words=}""")
 
-    def build_stopwords(self):
-        self.stopwords = stopwords.get(self.lang, set()) | {
-            "new",
-            "bar",
-            "button",
-            "checkbox",
-            "click",
-            "tap",
-            "command",
-            "dialog",
-            "drag",
-            "dropdown",
-            "edit",
-            "fontlab",
-            "menu",
-            "panel",
-            "use",
-        }
+
+    def get_stop_words(self, stop_words):
+        return stopwords.get(self.lang, set()) | set(stop_words)
 
     def load(self, doc: TagDoc):
         self.doc = doc
@@ -229,7 +212,7 @@ class TagExtractor(object):
 
     def get_freqtags_from_text_with_extractor(self, text, extractor, n_best):
         extractor.load_document(
-            text, language=self.lang, stoplist=self.stopwords, normalization=None
+            text, language=self.lang, stoplist=self.stop_words, normalization=None
         )
         extractor.candidate_selection()  # pos={'NOUN', 'PROPN', 'ADJ'})
         extractor.candidate_weighting()
@@ -327,6 +310,7 @@ def md_auto_tags(
     auto_only: bool = False,
     retag: bool = False,
     tags_global_no: str = "",
+    stop_words: str = "",
     verbose: bool = False,
 ):
     """md_auto_tags
@@ -358,16 +342,14 @@ def md_auto_tags(
         auto_only (bool, optional): If True, the tool will generate tags only if `tags-auto: true` is present in the Markdown metadata. Defaults to False.
         retag (bool, optional): If False, the tool will not process Markdown files that have `tags-done: true` in the Markdown metadata. If True, it will process these files as well. Defaults to False.
         tags_global_no (str, optional): Space-separated list of tags which the tool will not put into `tags`, on top of the file-specific exclusions in the `tags-no` Markdown metadata list. Defaults to "".
+        stop_words (str, optional): Space-separated list of additional stop words for NLP analysis. Defaults to "".
         verbose (bool, optional): Print additional info during processing. Defaults to False.
     """
     logginglevel = logging.DEBUG if verbose else logging.INFO
     logging.basicConfig(level=logginglevel)
     logging.info(f"""\n# AUTO-TAGGING:\n- from: "{html_path}"\n- to: "{md_path}" """)
     paths = get_paths(Path(md_path).resolve(), Path(html_path).resolve())
-    if tags_global_no:
-        tags_global_no = tags_global_no.split(" ")
-    else:
-        tags_global_no = TAGS_GLOBAL_NO_DEFAULT
+    tags_global_no = tags_global_no.split(" ") if tags_global_no else []
     logging.debug(f"""{tags_global_no=}""")
     tagger = TagExtractor(
         lang=lang,
@@ -376,6 +358,7 @@ def md_auto_tags(
         retag=retag,
         auto_only=auto_only,
         boost_headings=boost_headings,
+        stop_words=stop_words.split(" ") if stop_words else []
     )
     for md_path, html_path in paths.items():
         tagger.load(
