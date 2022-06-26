@@ -16,6 +16,10 @@ The `md_auto_tags` tool is a CLI tool needs a Markdown file (or recursive folder
 
 The tool is quite slow, so by default it only processes files that have not been previously processed by it. The tool is a good companion for the MkDocs Material [`tags`](https://squidfunk.github.io/mkdocs-material/setup/setting-up-tags/) plugin.
 
+The tool can work in just a Markdown file. Then it will generate the HTML version on the fly, extract its text and then the tags from it.
+
+But it works better if you give it a path to a Markdown file and a path to a corresponding HTML file, or even a source folder with Markdown files and a reference folder which has corresponding HTML files in the same structure. This is useful if you run MkDocs with various plugins, so that the final HTML files include some additional texts. You can tell the tool to only analyze the content of a particular selector, for example `article` rather than the entire HTML file.
+
 #### Command-line usage
 
 ```
