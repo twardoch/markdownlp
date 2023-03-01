@@ -173,7 +173,6 @@ class TagExtractor(object):
         self.stop_words = self.get_stop_words(stop_words)
         logging.debug(f"""{self.stop_words=}""")
 
-
     def get_stop_words(self, stop_words):
         return stopwords.get(self.lang, set()) | set(stop_words)
 
@@ -358,7 +357,7 @@ def md_auto_tags(
         retag=retag,
         auto_only=auto_only,
         boost_headings=boost_headings,
-        stop_words=stop_words.split(" ") if stop_words else []
+        stop_words=stop_words.split(" ") if stop_words else [],
     )
     for md_path, html_path in paths.items():
         tagger.load(
@@ -372,6 +371,7 @@ def md_auto_tags(
 
 
 def cli():
+    fire.core.Display = lambda lines, out: print(*lines, file=out)
     fire.Fire(md_auto_tags)
 
 
