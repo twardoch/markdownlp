@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 import logging
 import math
 from pathlib import Path
-from typing import Union
-from slugify import slugify
+
 import markdown
+from slugify import slugify
 
 try:
-    from pattern.text.en import singularize, wordnet
     import spacy
+    from pattern.text.en import singularize, wordnet
 
     spacy.load("en_core_web_sm")
 except Exception:
@@ -26,17 +25,13 @@ except Exception:
     sys.exit(1)
 
 import fire
-from html22text import html22text
-
+from bs4 import BeautifulSoup
 from pke.lang import stopwords
 from pke.supervised import Kea
-from pke.unsupervised import (
-    TfIdf,
-    KPMiner,
-    TopicalPageRank,
-)
+from pke.unsupervised import KPMiner, TfIdf, TopicalPageRank
+
+from html22text import html22text
 from yaplon import oyaml
-from bs4 import BeautifulSoup
 
 MODELS_PARAMS = {
     TfIdf: (3, 1),
@@ -51,7 +46,7 @@ MODELS = {
 }
 
 
-class TagDoc(object):
+class TagDoc:
     def __init__(self, md_path, html_path="", selector="html", tags_global_no=None):
         self.md_path = Path(md_path).resolve()
         self.md = self.md_path.read_text(encoding="utf-8")
@@ -149,7 +144,7 @@ class TagDoc(object):
         )
 
 
-class TagExtractor(object):
+class TagExtractor:
     def __init__(
         self,
         lang: str = "en",
@@ -252,7 +247,7 @@ class TagExtractor(object):
                     self.freqtags_from_text_with_model(
                         model, self.doc.get_tags_text(boost_htags), boost
                     )
-                logging.debug(f"""\n#### ALL TEXT""")
+                logging.debug("""\n#### ALL TEXT""")
                 self.freqtags_from_text_with_model(model, self.doc.text, 1)
             self.tagd = dict(
                 sorted(
@@ -299,8 +294,8 @@ def get_paths(md_path, html_path=""):
 
 
 def md_auto_tags(
-    md_path: Union[Path, str],
-    html_path: Union[Path, str] = "",
+    md_path: Path | str,
+    html_path: Path | str = "",
     selector: str = "html",
     boost_headings: bool = False,
     lang: str = "en",
